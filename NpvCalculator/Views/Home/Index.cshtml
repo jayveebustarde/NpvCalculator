@@ -1,0 +1,86 @@
+﻿@{
+    ViewData["Title"] = "Npv Calculator";
+}
+
+<div class="container" ng-app="app" ng-controller="NpvController as npv">
+    <div class="row">
+        <div class="col col-md-5 col-xs-12">
+            <form class="needs-validation" novalidate>
+                <label for="intAmt" class="form-label">Initial Amount</label>            
+                <div class="input-group mb-3">
+                    <span class="input-group-text">$</span>
+                    <input id="intAmt" type="text" class="form-control" aria-label="Initial Amount" ng-model="npv.initialAmount" ng-currency currency-symbol="">
+                </div>
+                <div class="row">
+                    <div class="col-6">
+                        <label for="lowerBound" class="form-label">Lower Bound Discount Rate</label>
+                        <div class="input-group mb-3">
+                            <input id="lowerBound" type="text" class="form-control" aria-describedby="lbValidation" ng-model="npv.lowerBound" required>
+                            <span class="input-group-text">%</span>
+                            <div id="lbValidation" class="invalid-feedback">Please provide valid bounds.</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <label for="upperBound" class="form-label">Upper Bound Discount Rate</label>            
+                        <div class="input-group mb-3">
+                            <input id="upperBound" type="text" class="form-control" aria-describedby="ubValidation" ng-model="npv.upperBound" required>
+                            <span class="input-group-text">%</span>
+                            <div id="ubValidation" class="invalid-feedback">Please provide valid increment.</div>
+                        </div>
+                    </div>
+                </div>
+                <label for="incrementRate" class="form-label">Increment Rate</label>            
+                <div class="input-group mb-3">
+                    <input id="incrementRate" type="text" class="form-control" aria-describedby="incrementValidation" ng-model="npv.increment" required>
+                    <span class="input-group-text">%</span>
+                    <div id="incrementValidation" class="invalid-feedback">Please provide valid increment.</div>
+                </div>
+                <label class="form-label">Cashflows</label>            
+                <div class="input-group mb-1" ng-repeat="cf in npv.cashFlows track by $index">
+                    <span class="input-group-text">Year {{$index + 1}}</span>
+                    <span class="input-group-text">$</span>
+                    <input type="text" class="form-control" aria-label="cashflow" ng-model="npv.cashFlows[$index]">
+                    <button type="button" class="btn btn-danger" ng-click="npv.delCashflow($index)"><i class="bi bi-x-circle"></i></button>
+                </div>
+                <div class="justify-content-between">
+                    <button type="button" class="btn btn-link" ng-click="npv.addCashflow()">Add cashflow</button>
+                </div>
+                <div class="invalid-feedback" ng-style="npv.errMessage ? npv.displayTrue : npv.displayNone">{{npv.errMessage}}</div>
+                <div class="text-center mt-2">
+                    <button class="btn btn-primary" type="submit" ng-click="npv.compute()">
+                        Compute
+                        <span class="spinner-border spinner-border-sm" ng-if="npv.isComputing" role="status" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-7 col-xs-12 ml-3" ng-show="npv.npvList.length > 0" >
+            <canvas id="npvChart"></canvas>
+            <div class="col-12 overflow-auto mt-3">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th><em>Rate</em></th>
+                            <th scope="col" ng-repeat="net in npv.npvList track by $index">{{net.discountRate}}%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><em>NPV</em></td>
+                            <td ng-repeat="val in npv.npvList track by $index" ng-style="val.isLoss ? npv.lossStyle : npv.gainStyle">${{val.npv | number: 2}}</td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ng-currency/1.2.3/ng-currency.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="~/js/module/app.js"></script>
+    <script src="~/js/Services/apiService.js"></script>
+    <script src="~/js/Controller/npvController.js"></script>
+}
